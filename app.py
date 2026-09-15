@@ -151,7 +151,6 @@ st.markdown('<div class="terminal-badge">🟢 Week 2 Monte Carlo Engine: 50,000 
 
 st.markdown('<div class="pill-label">Select Week 2 Matchup</div>', unsafe_allow_html=True)
 
-# Render matchup selector in neat columns of 2 for mobile optimization
 cols_per_row = 2
 for i in range(0, len(WEEK_2_MATCHUPS), cols_per_row):
     row_matchups = WEEK_2_MATCHUPS[i:i+cols_per_row]
@@ -199,14 +198,22 @@ if run_sim:
     favored_team = home_team if h_win_prob >= 0.5 else away_team
     favored_spread_display = home_spread if h_win_prob >= 0.5 else away_spread
 
+    # Explicitly determine who has the higher percentage to show them cleanly on top
+    if h_win_prob >= a_win_prob:
+        top_team, top_prob = home_team, h_win_prob
+        bot_team, bot_prob = away_team, a_win_prob
+    else:
+        top_team, top_prob = away_team, a_win_prob
+        bot_team, bot_prob = home_team, h_win_prob
+
     st.markdown('<div class="section-header">🎯 Terminal Projections & Edge</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-title">Model Win Prob</div>
-            <div class="metric-value">{home_team} {h_win_prob*100:.0f}%</div>
-            <div class="metric-sub">{away_team} {a_win_prob*100:.0f}%</div>
+            <div class="metric-value">{top_team} {top_prob*100:.0f}%</div>
+            <div class="metric-sub">{bot_team} {bot_prob*100:.0f}%</div>
         </div>""", unsafe_allow_html=True)
     with c2:
         st.markdown(f"""
