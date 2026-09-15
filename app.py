@@ -3,24 +3,31 @@ import nflreadpy as nfl
 import pandas as pd
 import numpy as np
 
-# Page configuration
-st.set_page_config(page_title="The Pick Don Clone", layout="wide", initial_sidebar_state="collapsed")
+# Page setup
+st.set_page_config(page_title="APEX SPORTS HUB", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS to force mobile-friendly flexbox layouts and custom card theme
+# Custom CSS for Light Modern "Pick Don" UI
 st.markdown("""
 <style>
     .stApp {
         background-color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    .brand-header {
-        font-size: 26px;
+    .brand-title {
+        font-size: 28px;
         font-weight: 900;
-        letter-spacing: -0.5px;
+        letter-spacing: -1px;
         color: #0f172a;
         text-transform: uppercase;
         text-align: center;
-        margin-bottom: 16px;
+        margin-bottom: 5px;
+    }
+    .brand-sub {
+        font-size: 12px;
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 20px;
+        font-weight: 600;
     }
     .unlimited-banner {
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -35,11 +42,41 @@ st.markdown("""
         color: #166534;
         font-size: 15px;
     }
-    .banner-sub {
+    .banner-sub-text {
         color: #15803d;
         font-size: 12px;
     }
-    /* Mobile-safe side-by-side flexbox header */
+    .game-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .game-team {
+        font-weight: 700;
+        font-size: 14px;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .game-logo {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+    }
+    .game-meta {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 8px;
+    }
     .matchup-container {
         display: flex;
         justify-content: space-around;
@@ -51,48 +88,18 @@ st.markdown("""
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
     }
-    .team-box {
-        text-align: center;
-        width: 40%;
-    }
-    .team-logo {
-        width: 65px;
-        height: 65px;
-        object-fit: contain;
-    }
-    .team-title {
-        font-weight: 800;
-        font-size: 13px;
-        color: #0f172a;
-        margin-top: 6px;
-        line-height: 1.2;
-    }
-    .team-abbr {
-        font-size: 11px;
-        color: #64748b;
-        font-weight: 600;
-    }
-    .vs-box {
-        text-align: center;
-        width: 20%;
-    }
-    .vs-text {
-        font-weight: 900;
-        font-size: 18px;
-        color: #94a3b8;
-    }
-    .stat-label {
-        font-weight: 700;
-        color: #334155;
-        font-size: 13px;
-        margin-top: 10px;
-    }
+    .team-box { text-align: center; width: 40%; }
+    .team-logo-lg { width: 65px; height: 65px; object-fit: contain; }
+    .team-title { font-weight: 800; font-size: 13px; color: #0f172a; margin-top: 6px; }
+    .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 18px; color: #94a3b8; }
+    .stat-label { font-weight: 700; color: #334155; font-size: 13px; margin-top: 10px; }
+    .footer-text { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Team Name & ESPN Logo Mapping
+# Team Map & Logos
 TEAM_MAP = {
     'ARI': ('Arizona Cardinals', 'ari'), 'ATL': ('Atlanta Falcons', 'atl'),
     'BAL': ('Baltimore Ravens', 'bal'), 'BUF': ('Buffalo Bills', 'buf'),
@@ -119,6 +126,12 @@ def get_logo(abbr):
 def get_full_name(abbr):
     return TEAM_MAP.get(abbr, (abbr, abbr))[0]
 
+def prob_to_american(p):
+    if p >= 0.5:
+        return f"-{int(round((p / (1.0 - p)) * 100))}"
+    else:
+        return f"+{int(round(((1.0 - p) / p) * 100))}"
+
 @st.cache_data(ttl=86400)
 def load_data():
     df = nfl.load_pbp(seasons=[2025])
@@ -144,48 +157,71 @@ def load_data():
         'rush_yds': off_rush_yds
     }).fillna(0)
 
-def prob_to_american(p):
-    if p >= 0.5:
-        return f"-{int(round((p / (1.0 - p)) * 100))}"
-    else:
-        return f"+{int(round(((1.0 - p) / p) * 100))}"
+# Branding Header
+st.markdown('<div class="brand-title">⚡ APEX ALGO HUB</div>', unsafe_allow_html=True)
+st.markdown('<div class="brand-sub">POWERED BY APEX ANALYTICS ENGINE</div>', unsafe_allow_html=True)
 
-# App Header
-st.markdown('<div class="brand-header">⚡ THE PICK DON ENGINE</div>', unsafe_allow_html=True)
+# Sport Category Selector
+sport = st.selectbox("Select League", ["🏈 NFL", "🏈 NCAAF (Coming Soon)", "⚾ MLB (Coming Soon)", "🏀 NBA (Coming Soon)"], index=0)
 
-# Unlimited Banner Card
+# Banner
 st.markdown("""
 <div class="unlimited-banner">
     <div class="banner-title">🟢 UNLIMITED SIMULATIONS ACTIVE</div>
-    <div class="banner-sub">Monte Carlo 50,000 Iteration Engine</div>
+    <div class="banner-sub-text">50,000 Monte Carlo Iterations Enabled</div>
 </div>
 """, unsafe_allow_html=True)
+
+# Sample Schedule Games
+UPCOMING_GAMES = [
+    {"away": "WAS", "home": "PHI", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "Lincoln Financial Field"},
+    {"away": "BAL", "home": "IND", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "Lucas Oil Stadium"},
+    {"away": "BUF", "home": "HOU", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "NRG Stadium"},
+    {"away": "NO",  "home": "DET", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "Ford Field"},
+    {"away": "TB",  "home": "CIN", "date": "Sep 13th", "time": "4:25 PM EST", "venue": "Paycor Stadium"},
+]
 
 try:
     epa_df = load_data()
     teams = sorted(list(epa_df.index))
 
-    col1, col2 = st.columns(2)
-    with col1:
-        away_team = st.selectbox("Away Team", teams, index=teams.index("WAS") if "WAS" in teams else 0)
-    with col2:
-        home_team = st.selectbox("Home Team", teams, index=teams.index("PHI") if "PHI" in teams else 1)
+    st.markdown("### 🏈 NFL Upcoming Games")
+    
+    # Custom game selection card list
+    selected_game_idx = st.selectbox(
+        "Choose a matchup to analyze:",
+        range(len(UPCOMING_GAMES)),
+        format_func=lambda i: f"{UPCOMING_GAMES[i]['away']} @ {UPCOMING_GAMES[i]['home']} — {UPCOMING_GAMES[i]['date']} ({UPCOMING_GAMES[i]['time']})"
+    )
 
-    # Pure HTML Flexbox header guarantees horizontal layout on mobile
+    game = UPCOMING_GAMES[selected_game_idx]
+    away_team, home_team = game["away"], game["home"]
+
+    # Visual Cards Display
+    st.markdown(f"""
+    <div class="game-card">
+        <div class="game-header">
+            <div class="game-team"><img src="{get_logo(away_team)}" class="game-logo"/> {get_full_name(away_team)}</div>
+            <div style="font-weight: 800; color: #94a3b8;">@</div>
+            <div class="game-team"><img src="{get_logo(home_team)}" class="game-logo"/> {get_full_name(home_team)}</div>
+        </div>
+        <div class="game-meta">📅 {game['date']} • 🕒 {game['time']} • 📍 {game['venue']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Matchup Display Header
     st.markdown(f"""
     <div class="matchup-container">
         <div class="team-box">
-            <img src="{get_logo(away_team)}" class="team-logo"/>
+            <img src="{get_logo(away_team)}" class="team-logo-lg"/>
             <div class="team-title">{get_full_name(away_team)}</div>
-            <div class="team-abbr">{away_team}</div>
+            <div style="font-size:11px; color:#64748b;">{away_team}</div>
         </div>
-        <div class="vs-box">
-            <div class="vs-text">VS</div>
-        </div>
+        <div class="vs-box">VS</div>
         <div class="team-box">
-            <img src="{get_logo(home_team)}" class="team-logo"/>
+            <img src="{get_logo(home_team)}" class="team-logo-lg"/>
             <div class="team-title">{get_full_name(home_team)}</div>
-            <div class="team-abbr">{home_team}</div>
+            <div style="font-size:11px; color:#64748b;">{home_team}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -194,10 +230,10 @@ try:
         num_sims = 50000
         num_drives = 11
         
-        h_off = epa_df.loc[home_team, 'off_epa_drive']
-        h_def = epa_df.loc[home_team, 'def_epa_drive']
-        a_off = epa_df.loc[away_team, 'off_epa_drive']
-        a_def = epa_df.loc[away_team, 'def_epa_drive']
+        h_off = epa_df.loc[home_team, 'off_epa_drive'] if home_team in epa_df.index else 0
+        h_def = epa_df.loc[home_team, 'def_epa_drive'] if home_team in epa_df.index else 0
+        a_off = epa_df.loc[away_team, 'off_epa_drive'] if away_team in epa_df.index else 0
+        a_def = epa_df.loc[away_team, 'def_epa_drive'] if away_team in epa_df.index else 0
         
         exp_h = 2.0 + (h_off - a_def) + (1.8 / num_drives)
         exp_a = 2.0 + (a_off - h_def)
@@ -225,40 +261,25 @@ try:
         fair_spread = -np.mean(margins)
         fair_total = np.mean(totals)
         
-        spread_ci = (np.percentile(-margins, 2.5), np.percentile(-margins, 97.5))
-        total_ci = (np.percentile(totals, 2.5), np.percentile(totals, 97.5))
-        
         st.markdown("### 🎯 SIMULATION PROJECTIONS")
-        
         b1, b2, b3 = st.columns(3)
-        with b1:
-            st.metric("Win Probability", f"{home_team} {h_win_prob*100:.1f}%", f"{away_team} {a_win_prob*100:.1f}%")
-        with b2:
-            st.metric("Fair Spread", f"{home_team} {fair_spread:+.1f}", f"95% CI: [{spread_ci[0]:.1f}, {spread_ci[1]:.1f}]")
-        with b3:
-            st.metric("Fair Total (O/U)", f"{fair_total:.1f} pts", f"95% CI: [{total_ci[0]:.1f}, {total_ci[1]:.1f}]")
+        with b1: st.metric("Win Probability", f"{home_team} {h_win_prob*100:.1f}%", f"{away_team} {a_win_prob*100:.1f}%")
+        with b2: st.metric("Fair Spread", f"{home_team} {fair_spread:+.1f}")
+        with b3: st.metric("Fair Total (O/U)", f"{fair_total:.1f} pts")
 
         st.markdown("### 💰 FAIR MONEYLINE ODDS")
         m1, m2 = st.columns(2)
-        with m1:
-            st.metric(f"{away_team} Fair ML", prob_to_american(a_win_prob))
-        with m2:
-            st.metric(f"{home_team} Fair ML", prob_to_american(h_win_prob))
+        with m1: st.metric(f"{away_team} Fair ML", prob_to_american(a_win_prob))
+        with m2: st.metric(f"{home_team} Fair ML", prob_to_american(h_win_prob))
 
         st.markdown("### 📊 SIMULATED GAME METRICS")
-        
-        h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12))
-        a_pass = max(120.0, epa_df.loc[away_team, 'pass_yds'] + np.random.normal(0, 12))
-        h_rush = max(60.0, epa_df.loc[home_team, 'rush_yds'] + np.random.normal(0, 8))
-        a_rush = max(60.0, epa_df.loc[away_team, 'rush_yds'] + np.random.normal(0, 8))
+        h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12)) if home_team in epa_df.index else 220
+        a_pass = max(120.0, epa_df.loc[away_team, 'pass_yds'] + np.random.normal(0, 12)) if away_team in epa_df.index else 220
         
         st.markdown(f'<div class="stat-label">Passing Yards: {away_team} ({a_pass:.0f} yds) vs {home_team} ({h_pass:.0f} yds)</div>', unsafe_allow_html=True)
         st.progress(float(h_pass / (h_pass + a_pass)))
-        
-        st.markdown(f'<div class="stat-label">Rushing Yards: {away_team} ({a_rush:.0f} yds) vs {home_team} ({h_rush:.0f} yds)</div>', unsafe_allow_html=True)
-        st.progress(float(h_rush / (h_rush + a_rush)))
-        
-        st.markdown(f'<div class="stat-label">Offensive EPA/Play: {away_team} ({epa_df.loc[away_team, "off_epa_play"]:.3f}) vs {home_team} ({epa_df.loc[home_team, "off_epa_play"]:.3f})</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="footer-text">© 2026 APEX ANALYTICS. ALL RIGHTS RESERVED.<br>Powered by Apex Simulation Engine</div>', unsafe_allow_html=True)
 
 except Exception as e:
-    st.error(f"Loading engine data... ({e})")
+    st.error(f"Engine loading... ({e})")
