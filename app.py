@@ -5,18 +5,13 @@ import numpy as np
 # Page configuration
 st.set_page_config(page_title="PickzWDon | Elite Sports Analytics", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS with explicit mobile dropdown and scrolling fixes
+# Custom CSS with fixed mobile scrolling and clean badge styling (no broken images)
 st.markdown("""
 <style>
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+    .stApp {
         background-color: #0b0f19 !important;
         color: #f8fafc !important;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        overflow-y: auto !important;
-    }
-    
-    .stApp {
-        background-color: #0b0f19;
     }
 
     .brand-container {
@@ -69,8 +64,19 @@ st.markdown("""
         margin-bottom: 14px;
     }
     .team-box { text-align: center; width: 40%; }
-    .team-logo-lg { width: 56px; height: 56px; object-fit: contain; }
-    .team-title { font-weight: 800; font-size: 13px; color: #ffffff; margin-top: 6px; }
+    .team-badge-pill {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        border: 2px solid #374151;
+        border-radius: 12px;
+        padding: 10px;
+        font-size: 20px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .team-title { font-weight: 800; font-size: 12px; color: #d1d5db; margin-top: 4px; }
     .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 14px; color: #4b5563; }
     
     .metric-card {
@@ -179,60 +185,46 @@ st.markdown("""
 
 # Team Dictionaries
 NFL_TEAMS = {
-    'DAL': ('Dallas Cowboys', 'dal'), 'WAS': ('Washington Commanders', 'was'),
-    'BAL': ('Baltimore Ravens', 'bal'), 'IND': ('Indianapolis Colts', 'ind'),
-    'BUF': ('Buffalo Bills', 'buf'), 'HOU': ('Houston Texans', 'hou'),
-    'DET': ('Detroit Lions', 'det'), 'NO': ('New Orleans Saints', 'no'),
-    'CIN': ('Cincinnati Bengals', 'cin'), 'TB': ('Tampa Bay Buccaneers', 'tb'),
-    'GB': ('Green Bay Packers', 'gb'), 'NYJ': ('New York Jets', 'nyj'),
-    'PHI': ('Philadelphia Eagles', 'phi'), 'TEN': ('Tennessee Titans', 'ten'),
-    'KC': ('Kansas City Chiefs', 'kc'), 'MIA': ('Miami Dolphins', 'mia'),
-    'NE': ('New England Patriots', 'ne'), 'MIN': ('Minnesota Vikings', 'min'),
-    'PIT': ('Pittsburgh Steelers', 'pit'), 'LV': ('Las Vegas Raiders', 'lv'),
-    'CHI': ('Chicago Bears', 'chi'), 'LAC': ('Los Angeles Chargers', 'lac'),
-    'DEN': ('Denver Broncos', 'den')
+    'DAL': 'Dallas Cowboys', 'WAS': 'Washington Commanders',
+    'BAL': 'Baltimore Ravens', 'IND': 'Indianapolis Colts',
+    'BUF': 'Buffalo Bills', 'HOU': 'Houston Texans',
+    'DET': 'Detroit Lions', 'NO': 'New Orleans Saints',
+    'CIN': 'Cincinnati Bengals', 'TB': 'Tampa Bay Buccaneers',
+    'GB': 'Green Bay Packers', 'NYJ': 'New York Jets',
+    'PHI': 'Philadelphia Eagles', 'TEN': 'Tennessee Titans',
+    'KC': 'Kansas City Chiefs', 'MIA': 'Miami Dolphins',
+    'NE': 'New England Patriots', 'MIN': 'Minnesota Vikings',
+    'PIT': 'Pittsburgh Steelers', 'LV': 'Las Vegas Raiders',
+    'CHI': 'Chicago Bears', 'LAC': 'Los Angeles Chargers',
+    'DEN': 'Denver Broncos', 'ATL': 'Atlanta Falcons'
 }
 
 NCAAF_TEAMS = {
-    'ALA': ('Alabama Crimson Tide', 'alabama'), 'UGA': ('Georgia Bulldogs', 'georgia'),
-    'OSU': ('Ohio State Buckeyes', 'ohio-state'), 'MICH': ('Michigan Wolverines', 'michigan'),
-    'TEX': ('Texas Longhorns', 'texas'), 'ORE': ('Oregon Ducks', 'oregon'),
-    'CLEM': ('Clemson Tigers', 'clemson'), 'LSU': ('LSU Tigers', 'lsu')
+    'ALA': 'Alabama Crimson Tide', 'UGA': 'Georgia Bulldogs',
+    'OSU': 'Ohio State Buckeyes', 'MICH': 'Michigan Wolverines',
+    'TEX': 'Texas Longhorns', 'ORE': 'Oregon Ducks',
+    'CLEM': 'Clemson Tigers', 'LSU': 'LSU Tigers'
 }
 
 MLB_TEAMS = {
-    'NYY': ('New York Yankees', 'nyy'), 'LAD': ('Los Angeles Dodgers', 'lad'),
-    'BOS': ('Boston Red Sox', 'bos'), 'HOU': ('Houston Astros', 'hou'),
-    'ATL': ('Atlanta Braves', 'atl'), 'CHC': ('Chicago Cubs', 'chc'),
-    'NYM': ('New York Mets', 'nym'), 'PHI': ('Philadelphia Phillies', 'phi')
+    'NYY': 'New York Yankees', 'LAD': 'Los Angeles Dodgers',
+    'BOS': 'Boston Red Sox', 'HOU': 'Houston Astros',
+    'ATL': 'Atlanta Braves', 'CHC': 'Chicago Cubs',
+    'NYM': 'New York Mets', 'PHI': 'Philadelphia Phillies'
 }
 
 NBA_TEAMS = {
-    'LAL': ('Los Angeles Lakers', 'lal'), 'BOS': ('Boston Celtics', 'bos'),
-    'GSW': ('Golden State Warriors', 'gsw'), 'MIA': ('Miami Heat', 'mia'),
-    'NYK': ('New York Knicks', 'nyk'), 'DEN': ('Denver Nuggets', 'den'),
-    'PHX': ('Phoenix Suns', 'phx'), 'DAL': ('Dallas Mavericks', 'dal')
+    'LAL': 'Los Angeles Lakers', 'BOS': 'Boston Celtics',
+    'GSW': 'Golden State Warriors', 'MIA': 'Miami Heat',
+    'NYK': 'New York Knicks', 'DEN': 'Denver Nuggets',
+    'PHX': 'Phoenix Suns', 'DAL': 'Dallas Mavericks'
 }
 
-def get_logo(sport_key, abbr):
-    if sport_key == "🏈 NFL":
-        code = NFL_TEAMS.get(abbr, (abbr, abbr.lower()))[1]
-        return f"https://a.espncdn.com/i/teamlogos/nfl/500/{code}.png"
-    elif sport_key == "🏈 NCAAF":
-        code = NCAAF_TEAMS.get(abbr, (abbr, abbr.lower()))[1]
-        return f"https://a.espncdn.com/i/teamlogos/ncaa/500/{code}.png"
-    elif sport_key == "⚾ MLB":
-        code = MLB_TEAMS.get(abbr, (abbr, abbr.lower()))[1]
-        return f"https://a.espncdn.com/i/teamlogos/mlb/500/{code}.png"
-    else:
-        code = NBA_TEAMS.get(abbr, (abbr, abbr.lower()))[1]
-        return f"https://a.espncdn.com/i/teamlogos/nba/500/{code}.png"
-
 def get_full_name(sport_key, abbr):
-    if sport_key == "🏈 NFL": return NFL_TEAMS.get(abbr, (abbr,))[0]
-    elif sport_key == "🏈 NCAAF": return NCAAF_TEAMS.get(abbr, (abbr,))[0]
-    elif sport_key == "⚾ MLB": return MLB_TEAMS.get(abbr, (abbr,))[0]
-    else: return NBA_TEAMS.get(abbr, (abbr,))[0]
+    if sport_key == "🏈 NFL": return NFL_TEAMS.get(abbr, abbr)
+    elif sport_key == "🏈 NCAAF": return NCAAF_TEAMS.get(abbr, abbr)
+    elif sport_key == "⚾ MLB": return MLB_TEAMS.get(abbr, abbr)
+    else: return NBA_TEAMS.get(abbr, abbr)
 
 def prob_to_american(p):
     if p <= 0 or p >= 1: return "+100"
@@ -292,7 +284,7 @@ FULL_SCHEDULES = {
         "Wild Card Round": [{"away": "BOS", "home": "NYY"}, {"away": "HOU", "home": "LAD"}],
         "Division Series": [{"away": "CHC", "home": "ATL"}, {"away": "PHI", "home": "NYM"}],
         "League Championship": [{"away": "NYY", "home": "HOU"}, {"away": "LAD", "home": "ATL"}],
-        "World Series": [{"away": "NL Champ", "home": "AL Champ"}]
+        "World Series": [{"away": "NYM", "home": "NYY"}]
     },
     "🏀 NBA": {
         "Opening Week": [{"away": "LAL", "home": "BOS"}, {"away": "GSW", "home": "MIA"}],
@@ -302,7 +294,7 @@ FULL_SCHEDULES = {
         "Mid-Season Classic": [{"away": "LAL", "home": "NYK"}, {"away": "BOS", "home": "DEN"}],
         "Playoffs - Round 1": [{"away": "PHX", "home": "DEN"}, {"away": "MIA", "home": "BOS"}],
         "Conference Finals": [{"away": "LAL", "home": "GSW"}, {"away": "NYK", "home": "BOS"}],
-        "NBA Finals": [{"away": "East Champ", "home": "West Champ"}]
+        "NBA Finals": [{"away": "BOS", "home": "LAL"}]
     }
 }
 
@@ -322,20 +314,17 @@ try:
     game = matchups[selected_game_idx]
     away_team, home_team = game["away"], game["home"]
 
-    if away_team not in NFL_TEAMS and away_team not in NCAAF_TEAMS and away_team not in MLB_TEAMS and away_team not in NBA_TEAMS:
-        away_team, home_team = "NYY", "BOS"
-
-    # Matchup Display Card
+    # Matchup Display Card with reliable high-end CSS Badge Pills (No broken images)
     st.markdown(f"""
     <div class="matchup-container">
         <div class="team-box">
-            <img src="{get_logo(sport, away_team)}" class="team-logo-lg"/>
+            <div class="team-badge-pill">{away_team}</div>
             <div class="team-title">{get_full_name(sport, away_team)}</div>
             <div style="font-size:9px; color:#9ca3af; font-weight: 700; margin-top:2px;">AWAY</div>
         </div>
         <div class="vs-box">VS</div>
         <div class="team-box">
-            <img src="{get_logo(sport, home_team)}" class="team-logo-lg"/>
+            <div class="team-badge-pill">{home_team}</div>
             <div class="team-title">{get_full_name(sport, home_team)}</div>
             <div style="font-size:9px; color:#9ca3af; font-weight: 700; margin-top:2px;">HOME</div>
         </div>
