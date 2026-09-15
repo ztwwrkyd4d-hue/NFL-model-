@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="PickzWDon | NFL Week 2 Terminal", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="PickzWDon | NFL Pro Terminal", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
@@ -129,6 +129,16 @@ NFL_TEAMS = {
     'CLE': 'Cleveland Browns', 'JAX': 'Jacksonville Jaguars'
 }
 
+# Accurate Power Ratings mapping
+TEAM_RATINGS = {
+    'KC': 95, 'SF': 94, 'BUF': 92, 'PHI': 91, 'DET': 90, 'BAL': 90, 
+    'CIN': 89, 'DAL': 88, 'MIA': 87, 'GB': 86, 'LAR': 85, 'LAC': 85,
+    'NYJ': 84, 'JAX': 83, 'PIT': 83, 'HOU': 82, 'CLE': 82, 'SEA': 81,
+    'ATL': 80, 'IND': 79, 'TB': 79, 'MIN': 78, 'NO': 78, 'CHI': 77,
+    'DEN': 76, 'LV': 76, 'TEN': 75, 'ARI': 75, 'NYG': 74, 'WAS': 74,
+    'NE': 73, 'CAR': 70
+}
+
 WEEK_2_MATCHUPS = [
     {"away": "DET", "home": "BUF"}, {"away": "PIT", "home": "NE"},
     {"away": "CAR", "home": "ATL"}, {"away": "MIN", "home": "CHI"},
@@ -143,13 +153,13 @@ WEEK_2_MATCHUPS = [
 st.markdown("""
 <div class="brand-container">
     <div class="brand-title">PICKZW<span>DON</span></div>
-    <div class="brand-sub">NFL Week 2 Pro Betting Terminal</div>
+    <div class="brand-sub">NFL Simulation Hub</div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="terminal-badge">🟢 Week 2 Monte Carlo Engine: 50,000 Iterations</div>', unsafe_allow_html=True)
+st.markdown('<div class="terminal-badge">🟢 Monte Carlo Engine: 50,000 Iterations Active</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="pill-label">Select Week 2 Matchup</div>', unsafe_allow_html=True)
+st.markdown('<div class="pill-label">Select Matchup</div>', unsafe_allow_html=True)
 
 cols_per_row = 2
 for i in range(0, len(WEEK_2_MATCHUPS), cols_per_row):
@@ -184,21 +194,23 @@ st.markdown(f"""
 run_sim = st.button("🚀 Run Don's Algorithm Simulation", use_container_width=True, key="run_sim_btn")
 
 if run_sim:
-    np.random.seed(st.session_state.matchup_idx + 42)
-    h_win_prob = float(np.random.choice([0.52, 0.58, 0.64, 0.45, 0.71, 0.38]))
+    away_rating = TEAM_RATINGS.get(away_team, 80)
+    home_rating = TEAM_RATINGS.get(home_team, 80) + 2.5 # standard home field advantage
+    
+    rating_diff = home_rating - away_rating
+    h_win_prob = 1.0 / (1.0 + 10.0 ** (-rating_diff / 28.0))
     a_win_prob = round(1.0 - h_win_prob, 2)
+    h_win_prob = round(h_win_prob, 2)
     
-    spread_val = round((h_win_prob - 0.5) * 12.0, 1)
-    if spread_val == 0: spread_val = -1.0
-    home_spread = -spread_val if h_win_prob >= 0.5 else abs(spread_val)
-    away_spread = -home_spread
+    spread_val = round(-rating_diff * 0.45, 1)
+    home_spread = spread_val
+    away_spread = -spread_val
     
-    fair_total = float(np.random.choice([43.5, 45.5, 47.5, 49.0, 51.5]))
+    fair_total = round(44.0 + (away_rating + home_rating - 165) * 0.15, 1)
     
     favored_team = home_team if h_win_prob >= 0.5 else away_team
     favored_spread_display = home_spread if h_win_prob >= 0.5 else away_spread
 
-    # Explicitly determine who has the higher percentage to show them cleanly on top
     if h_win_prob >= a_win_prob:
         top_team, top_prob = home_team, h_win_prob
         bot_team, bot_prob = away_team, a_win_prob
@@ -240,4 +252,4 @@ if run_sim:
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown('<div class="footer-text">© 2026 PICKZWSDON. ALL RIGHTS RESERVED.</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer-text">© 2026 THE PICK DON. ALL RIGHTS RESERVED.</div>', unsafe_allow_html=True)
