@@ -47,6 +47,10 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+    .pill-label { font-size: 11px; font-weight: 800; color: #9ca3af; text-transform: uppercase; margin: 10px 0 7px 2px; }
+    div[data-testid="stHorizontalBlock"] div.stButton > button { min-height: 40px; padding: 6px 10px !important; border-radius: 10px !important; border: 1px solid #374151 !important; background: #111827 !important; color: #d1d5db !important; font-size: 11px !important; font-weight: 800 !important; width: 100% !important; }
+    div[data-testid="stHorizontalBlock"] div.stButton > button:hover { border-color: #10b981 !important; color: #ffffff !important; }
+    
     .matchup-container {
         display: flex;
         justify-content: space-around;
@@ -108,6 +112,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+if "matchup_idx" not in st.session_state:
+    st.session_state.matchup_idx = 0
+
 NFL_TEAMS = {
     'DAL': 'Dallas Cowboys', 'WAS': 'Washington Commanders', 'BAL': 'Baltimore Ravens', 
     'IND': 'Indianapolis Colts', 'BUF': 'Buffalo Bills', 'HOU': 'Houston Texans', 
@@ -123,28 +130,15 @@ NFL_TEAMS = {
 }
 
 WEEK_2_MATCHUPS = [
-    {"away": "DET", "home": "BUF"},
-    {"away": "PIT", "home": "NE"},
-    {"away": "CAR", "home": "ATL"},
-    {"away": "MIN", "home": "CHI"},
-    {"away": "CIN", "home": "HOU"},
-    {"away": "CLE", "home": "TB"},
-    {"away": "NO", "home": "BAL"},
-    {"away": "PHI", "home": "TEN"},
-    {"away": "GB", "home": "NYJ"},
-    {"away": "JAX", "home": "DEN"},
-    {"away": "LV", "home": "LAC"},
-    {"away": "SEA", "home": "ARI"},
-    {"away": "MIA", "home": "SF"},
-    {"away": "WAS", "home": "DAL"},
-    {"away": "IND", "home": "KC"},
-    {"away": "NYG", "home": "LAR"}
+    {"away": "DET", "home": "BUF"}, {"away": "PIT", "home": "NE"},
+    {"away": "CAR", "home": "ATL"}, {"away": "MIN", "home": "CHI"},
+    {"away": "CIN", "home": "HOU"}, {"away": "CLE", "home": "TB"},
+    {"away": "NO", "home": "BAL"},  {"away": "PHI", "home": "TEN"},
+    {"away": "GB", "home": "NYJ"},  {"away": "JAX", "home": "DEN"},
+    {"away": "LV", "home": "LAC"},  {"away": "SEA", "home": "ARI"},
+    {"away": "MIA", "home": "SF"},  {"away": "WAS", "home": "DAL"},
+    {"away": "IND", "home": "KC"},  {"away": "NYG", "home": "LAR"}
 ]
-
-def prob_to_american(p):
-    if p <= 0 or p >= 1: return "+100"
-    if p >= 0.5: return f"-{int(round((p / (1.0 - p)) * 100))}"
-    else: return f"+{int(round(((1.0 - p) / p) * 100))}"
 
 st.markdown("""
 <div class="brand-container">
@@ -155,11 +149,21 @@ st.markdown("""
 
 st.markdown('<div class="terminal-badge">🟢 Week 2 Monte Carlo Engine: 50,000 Iterations</div>', unsafe_allow_html=True)
 
-matchup_labels = [f"{m['away']} @ {m['home']}" for m in WEEK_2_MATCHUPS]
-selected_matchup_label = st.selectbox("Select Week 2 Matchup", matchup_labels)
+st.markdown('<div class="pill-label">Select Week 2 Matchup</div>', unsafe_allow_html=True)
 
-selected_idx = matchup_labels.index(selected_matchup_label)
-game = WEEK_2_MATCHUPS[selected_idx]
+# Render matchup selector in neat columns of 2 for mobile optimization
+cols_per_row = 2
+for i in range(0, len(WEEK_2_MATCHUPS), cols_per_row):
+    row_matchups = WEEK_2_MATCHUPS[i:i+cols_per_row]
+    cols = st.columns(cols_per_row)
+    for j, m in enumerate(row_matchups):
+        idx = i + j
+        label = f"{m['away']} @ {m['home']}"
+        with cols[j]:
+            if st.button(label, key=f"match_{idx}", use_container_width=True):
+                st.session_state.matchup_idx = idx
+
+game = WEEK_2_MATCHUPS[st.session_state.matchup_idx]
 away_team, home_team = game["away"], game["home"]
 
 st.markdown(f"""
@@ -181,12 +185,10 @@ st.markdown(f"""
 run_sim = st.button("🚀 Run Don's Algorithm Simulation", use_container_width=True, key="run_sim_btn")
 
 if run_sim:
-    # Deterministic pseudo-random split per game based on index so numbers make sense per matchup
-    np.random.seed(selected_idx + 42)
+    np.random.seed(st.session_state.matchup_idx + 42)
     h_win_prob = float(np.random.choice([0.52, 0.58, 0.64, 0.45, 0.71, 0.38]))
     a_win_prob = round(1.0 - h_win_prob, 2)
     
-    # Proper spread assignment: if home team win prob > 0.5, home team is favored (-)
     spread_val = round((h_win_prob - 0.5) * 12.0, 1)
     if spread_val == 0: spread_val = -1.0
     home_spread = -spread_val if h_win_prob >= 0.5 else abs(spread_val)
@@ -195,7 +197,6 @@ if run_sim:
     fair_total = float(np.random.choice([43.5, 45.5, 47.5, 49.0, 51.5]))
     
     favored_team = home_team if h_win_prob >= 0.5 else away_team
-    favored_prob = max(h_win_prob, a_win_prob)
     favored_spread_display = home_spread if h_win_prob >= 0.5 else away_spread
 
     st.markdown('<div class="section-header">🎯 Terminal Projections & Edge</div>', unsafe_allow_html=True)
