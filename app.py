@@ -5,7 +5,7 @@ import numpy as np
 # Page configuration
 st.set_page_config(page_title="PickzWDon | Elite Sports Analytics", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS with fixed mobile scrolling and clean badge styling (no broken images)
+# Custom CSS with fixed mobile scrolling and fully expanded dropdown menus
 st.markdown("""
 <style>
     .stApp {
@@ -151,23 +151,27 @@ st.markdown("""
     
     div.stSelectbox > div > div { background-color: #111827; color: white; border: 1px solid #374151; }
     
+    /* Fixed mobile dropdown menu clipping and touch scroll behavior */
     div[data-baseweb="popover"] {
         z-index: 999999 !important;
         background-color: #111827 !important;
         border: 1px solid #374151 !important;
-        position: absolute !important;
+        position: fixed !important;
+        max-height: 60vh !important;
     }
     
     div[data-baseweb="menu"], ul[data-baseweb="menu"] {
         background-color: #111827 !important;
         color: white !important;
-        max-height: 250px !important;
+        max-height: 55vh !important;
         overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     
     li[data-baseweb="option"] {
         background-color: #111827 !important;
         color: white !important;
+        padding: 12px 16px !important;
     }
     
     li[data-baseweb="option"]:hover {
@@ -314,7 +318,7 @@ try:
     game = matchups[selected_game_idx]
     away_team, home_team = game["away"], game["home"]
 
-    # Matchup Display Card with reliable high-end CSS Badge Pills (No broken images)
+    # Matchup Display Card with reliable high-end CSS Badge Pills
     st.markdown(f"""
     <div class="matchup-container">
         <div class="team-box">
