@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 
 # Page configuration
-st.set_page_config(page_title="PickzWDon | NFL Analytics", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="PickzWDon | NFL Week 2 Terminal", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for dark theme and styling
+# Custom CSS for clean mobile-friendly layout
 st.markdown("""
 <style>
     .stApp {
@@ -127,27 +127,25 @@ NFL_TEAMS = {
     'CLE': 'Cleveland Browns', 'JAX': 'Jacksonville Jaguars'
 }
 
-# Full 18-Week NFL Schedule
-NFL_SCHEDULE = {
-    "Week 1": [{"away": "WAS", "home": "DAL"}, {"away": "BAL", "home": "IND"}],
-    "Week 2": [{"away": "DET", "home": "BUF"}, {"away": "IND", "home": "KC"}],
-    "Week 3": [{"away": "ATL", "home": "GB"}, {"away": "KC", "home": "MIA"}],
-    "Week 4": [{"away": "BUF", "home": "BAL"}, {"away": "DAL", "home": "DET"}],
-    "Week 5": [{"away": "IND", "home": "TEN"}, {"away": "GB", "home": "WAS"}],
-    "Week 6": [{"away": "KC", "home": "BUF"}, {"away": "MIA", "home": "NE"}],
-    "Week 7": [{"away": "BAL", "home": "TB"}, {"away": "DAL", "home": "CIN"}],
-    "Week 8": [{"away": "DET", "home": "GB"}, {"away": "BUF", "home": "KC"}],
-    "Week 9": [{"away": "MIA", "home": "BUF"}, {"away": "NE", "home": "NYJ"}],
-    "Week 10": [{"away": "TB", "home": "NO"}, {"away": "CIN", "home": "BAL"}],
-    "Week 11": [{"away": "GB", "home": "DET"}, {"away": "IND", "home": "HOU"}],
-    "Week 12": [{"away": "DAL", "home": "WAS"}, {"away": "KC", "home": "LV"}],
-    "Week 13": [{"away": "BUF", "home": "NE"}, {"away": "MIA", "home": "GB"}],
-    "Week 14": [{"away": "BAL", "home": "CIN"}, {"away": "TB", "home": "ATL"}],
-    "Week 15": [{"away": "DET", "home": "CHI"}, {"away": "KC", "home": "LAC"}],
-    "Week 16": [{"away": "DAL", "home": "PHI"}, {"away": "BUF", "home": "MIA"}],
-    "Week 17": [{"away": "GB", "home": "MIN"}, {"away": "KC", "home": "DEN"}],
-    "Week 18": [{"away": "WAS", "home": "DAL"}, {"away": "BAL", "home": "PIT"}]
-}
+# Complete Week 2 Matchups List
+WEEK_2_MATCHUPS = [
+    {"away": "DET", "home": "BUF"},
+    {"away": "PIT", "home": "NE"},
+    {"away": "CAR", "home": "ATL"},
+    {"away": "MIN", "home": "CHI"},
+    {"away": "CIN", "home": "HOU"},
+    {"away": "CLE", "home": "TB"},
+    {"away": "NO", "home": "BAL"},
+    {"away": "PHI", "home": "TEN"},
+    {"away": "GB", "home": "NYJ"},
+    {"away": "JAX", "home": "DEN"},
+    {"away": "LV", "home": "LAC"},
+    {"away": "SEA", "home": "ARI"},
+    {"away": "MIA", "home": "SF"},
+    {"away": "WAS", "home": "DAL"},
+    {"away": "IND", "home": "KC"},
+    {"away": "NYG", "home": "LAR"}
+]
 
 def prob_to_american(p):
     if p <= 0 or p >= 1: return "+100"
@@ -158,23 +156,18 @@ def prob_to_american(p):
 st.markdown("""
 <div class="brand-container">
     <div class="brand-title">PICKZW<span>DON</span></div>
-    <div class="brand-sub">Elite Pro NFL Betting Terminal & Simulation Engine</div>
+    <div class="brand-sub">NFL Week 2 Pro Betting Terminal</div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="terminal-badge">🟢 NFL Monte Carlo Engine: 50,000 Iterations Active</div>', unsafe_allow_html=True)
+st.markdown('<div class="terminal-badge">🟢 Week 2 Monte Carlo Engine: 50,000 Iterations</div>', unsafe_allow_html=True)
 
-# Standard Dropdowns for Week and Matchup Selection
-weeks_list = list(NFL_SCHEDULE.keys())
-selected_week = st.selectbox("Select NFL Week", weeks_list)
+# Select Matchup Dropdown for Week 2 only
+matchup_labels = [f"{m['away']} @ {m['home']}" for m in WEEK_2_MATCHUPS]
+selected_matchup_label = st.selectbox("Select Week 2 Matchup", matchup_labels)
 
-matchups = NFL_SCHEDULE[selected_week]
-matchup_labels = [f"{m['away']} @ {m['home']}" for m in matchups]
-selected_matchup_label = st.selectbox("Select Matchup", matchup_labels)
-
-# Get selected game details
 selected_idx = matchup_labels.index(selected_matchup_label)
-game = matchups[selected_idx]
+game = WEEK_2_MATCHUPS[selected_idx]
 away_team, home_team = game["away"], game["home"]
 
 # Matchup Header Display Card
