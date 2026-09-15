@@ -5,7 +5,7 @@ import numpy as np
 # Page configuration
 st.set_page_config(page_title="APEX SPORTS HUB", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for clean cards, visual progress bars, and mobile-safe text
+# Custom CSS for crisp, high-end mobile-friendly stat cards & custom bars
 st.markdown("""
 <style>
     .stApp {
@@ -67,31 +67,50 @@ st.markdown("""
     .metric-value { font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 2px; }
     .metric-sub { font-size: 10px; color: #059669; font-weight: 600; }
 
+    /* Crisp Stats Cards with Custom HTML Progress Bars */
     .stats-card {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 14px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .stat-category-title {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 800;
-        color: #334155;
+        color: #64748b;
         text-align: center;
         text-transform: uppercase;
-        margin-bottom: 10px;
-        margin-top: 6px;
+        margin-bottom: 8px;
         letter-spacing: 0.5px;
     }
     .stat-row {
         display: flex;
         justify-content: space-between;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 800;
         color: #0f172a;
-        margin-bottom: 3px;
+        margin-top: 6px;
+        margin-bottom: 2px;
+    }
+    .bar-bg {
+        background-color: #f1f5f9;
+        border-radius: 6px;
+        height: 8px;
+        width: 100%;
+        overflow: hidden;
+        margin-top: 2px;
+    }
+    .bar-fill-home {
+        background-color: #0f172a;
+        height: 100%;
+        border-radius: 6px;
+    }
+    .bar-fill-away {
+        background-color: #7f1d1d;
+        height: 100%;
+        border-radius: 6px;
     }
 
     .section-header { font-size: 13px; font-weight: 800; color: #1e293b; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; }
@@ -178,10 +197,8 @@ def load_data():
 st.markdown('<div class="brand-title">⚡ APEX ALGO HUB</div>', unsafe_allow_html=True)
 st.markdown('<div class="brand-sub">POWERED BY APEX ANALYTICS ENGINE</div>', unsafe_allow_html=True)
 
-# Sport / League Selector
 sport = st.selectbox("Select League", ["🏈 NFL", "🏈 NCAAF", "⚾ MLB", "🏀 NBA"], index=0)
 
-# Banner
 st.markdown("""
 <div class="unlimited-banner">
     <div class="banner-title">🟢 UNLIMITED SIMULATIONS ACTIVE</div>
@@ -209,7 +226,6 @@ try:
     game = UPCOMING_GAMES[selected_game_idx]
     away_team, home_team = game["away"], game["home"]
 
-    # Matchup Display Header
     st.markdown(f"""
     <div class="matchup-container">
         <div class="team-box">
@@ -301,10 +317,9 @@ try:
                 <div class="metric-value">{prob_to_american(a_win_prob)}</div>
             </div>""", unsafe_allow_html=True)
 
-        # Simulated Team Stats breakdown cards & progress bars matching reference design
+        # Simulated Team Stats using clean embedded HTML cards
         st.markdown('<div class="section-header">📊 Simulated Team Stats</div>', unsafe_allow_html=True)
 
-        # Generate realistic stat numbers based on data or defaults
         h_pass = max(130.0, (epa_df.loc[home_team, 'pass_yds'] if home_team in epa_df.index else 210) + np.random.normal(0, 8))
         a_pass = max(130.0, (epa_df.loc[away_team, 'pass_yds'] if away_team in epa_df.index else 210) + np.random.normal(0, 8))
         
@@ -326,25 +341,23 @@ try:
         h_to = round(max(0.3, min(2.5, 1.1 + np.random.normal(0, 0.2))), 1)
         a_to = round(max(0.3, min(2.5, 1.2 + np.random.normal(0, 0.2))), 1)
 
-        def render_stat_box(category, team1_label, team1_val, team2_label, team2_val, is_pct=False, is_to=False):
-            max_v = max(team1_val, team2_val) if not is_to else 3.0
+        def render_stat_box(category, t1_name, t1_val, t2_name, t2_val, is_pct=False, is_to=False):
+            max_v = max(t1_val, t2_val) if not is_to else 3.0
             max_v = max(max_v, 1.0)
-            p1 = min(1.0, max(0.05, team1_val / max_v))
-            p2 = min(1.0, max(0.05, team2_val / max_v))
+            p1 = int(min(100, max(5, (t1_val / max_v) * 100)))
+            p2 = int(min(100, max(5, (t2_val / max_v) * 100)))
             
-            fmt = "{:.1f}yds" if ("Yards" in category or category in ["Passing", "Rushing", "Total"]) else ("{:.3f}" if category=="EPA/Play" else ("{:.1f}%" if is_pct else "{:.1f}"))
+            fmt = "{:.1f}yds" if category in ["Passing", "Rushing", "Total Yards"] else ("{:.3f}" if category=="EPA/Play" else ("{:.1f}%" if is_pct else "{:.1f}"))
             
             st.markdown(f"""
             <div class="stats-card">
                 <div class="stat-category-title">{category}</div>
-                <div class="stat-row"><span>{team1_label}</span><span>{fmt.format(team1_val)}</span></div>
+                <div class="stat-row"><span>{t1_name}</span><span>{fmt.format(t1_val)}</span></div>
+                <div class="bar-bg"><div class="bar-fill-home" style="width: {p1}%;"></div></div>
+                <div class="stat-row" style="margin-top: 8px;"><span>{t2_name}</span><span>{fmt.format(t2_val)}</span></div>
+                <div class="bar-bg"><div class="bar-fill-away" style="width: {p2}%;"></div></div>
+            </div>
             """, unsafe_allow_html=True)
-            st.progress(p1)
-            st.markdown(f"""
-                <div class="stat-row" style="margin-top: 8px;"><span>{team2_label}</span><span>{fmt.format(team2_val)}</span></div>
-            """, unsafe_allow_html=True)
-            st.progress(p2)
-            st.markdown("</div>", unsafe_allow_html=True)
 
         render_stat_box("Passing", home_team, h_pass, away_team, a_pass)
         render_stat_box("Rushing", home_team, h_rush, away_team, a_rush)
@@ -354,11 +367,10 @@ try:
         render_stat_box("3rd Down Conversion", home_team, h_3rd, away_team, a_3rd, is_pct=True)
         render_stat_box("Turnovers", home_team, h_to, away_team, a_to, is_to=True)
 
-        # Algorithm footer badge
         st.markdown("""
         <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; margin-top: 14px;">
-            <div style="font-weight: 800; font-size: 12px; color: #1e293b; margin-bottom: 4px;">🟢 The Apex Analytics Algorithm</div>
-            <div style="font-size: 10px; color: #64748b;">Results generated using proprietary Monte Carlo simulation model incorporating live team EPA ratings and advanced situational metrics.</div>
+            <div style="font-weight: 800; font-size: 11px; color: #1e293b; margin-bottom: 2px;">🟢 The Apex Analytics Algorithm</div>
+            <div style="font-size: 9px; color: #64748b;">Results generated using proprietary Monte Carlo simulation model incorporating live team EPA ratings.</div>
         </div>
         """, unsafe_allow_html=True)
 
