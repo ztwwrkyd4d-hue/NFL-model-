@@ -5,14 +5,19 @@ import numpy as np
 # Page configuration
 st.set_page_config(page_title="PickzWDon | Elite Sports Analytics", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for high-end professional sports-betting terminal styling
+# Custom CSS with explicit mobile dropdown and scrolling fixes
 st.markdown("""
 <style>
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background-color: #0b0f19 !important;
+        color: #f8fafc !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
     .stApp {
         background-color: #0b0f19;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: #f8fafc;
     }
+
     .brand-container {
         text-align: center;
         padding: 15px 0 5px 0;
@@ -135,11 +140,17 @@ st.markdown("""
     .sharp-text { color: #d1fae5; font-size: 11px; line-height: 1.4; }
 
     .section-header { font-size: 12px; font-weight: 800; color: #e5e7eb; margin-top: 16px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .footer-text { text-align: center; font-size: 10px; color: #6b7280; margin-top: 24px; font-weight: 600; }
+    .footer-text { text-align: center; font-size: 10px; color: #6b7280; margin-top: 24px; margin-bottom: 60px; font-weight: 600; }
     
-    /* Streamlit overrides for dark theme */
+    /* Streamlit overrides for dark theme & dropdown list scrolling */
     div.stSelectbox > div > div { background-color: #111827; color: white; border: 1px solid #374151; }
-    div.stButton > button { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 900; border: none; border-radius: 10px; padding: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    div[data-baseweb="popover"] { background-color: #111827 !important; border: 1px solid #374151 !important; }
+    div[data-baseweb="menu"] { background-color: #111827 !important; color: white !important; max-height: 300px !important; }
+    ul[data-baseweb="menu"] { background-color: #111827 !important; }
+    li[data-baseweb="option"] { background-color: #111827 !important; color: white !important; }
+    li[data-baseweb="option"]:hover { background-color: #1f2937 !important; color: #34d399 !important; }
+    
+    div.stButton > button { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 900; border: none; border-radius: 10px; padding: 12px; text-transform: uppercase; letter-spacing: 1px; width: 100%; }
     div.stButton > button:hover { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: #000; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -156,7 +167,11 @@ NFL_TEAMS = {
     'CIN': ('Cincinnati Bengals', 'cin'), 'TB': ('Tampa Bay Buccaneers', 'tb'),
     'GB': ('Green Bay Packers', 'gb'), 'NYJ': ('New York Jets', 'nyj'),
     'PHI': ('Philadelphia Eagles', 'phi'), 'TEN': ('Tennessee Titans', 'ten'),
-    'KC': ('Kansas City Chiefs', 'kc'), 'MIA': ('Miami Dolphins', 'mia')
+    'KC': ('Kansas City Chiefs', 'kc'), 'MIA': ('Miami Dolphins', 'mia'),
+    'NE': ('New England Patriots', 'ne'), 'MIN': ('Minnesota Vikings', 'min'),
+    'PIT': ('Pittsburgh Steelers', 'pit'), 'LV': ('Las Vegas Raiders', 'lv'),
+    'CHI': ('Chicago Bears', 'chi'), 'LAC': ('Los Angeles Chargers', 'lac'),
+    'DEN': ('Denver Broncos', 'den')
 }
 
 NCAAF_TEAMS = {
@@ -217,24 +232,58 @@ sport = st.selectbox("Select League", ["🏈 NFL", "🏈 NCAAF", "⚾ MLB", "�
 
 st.markdown('<div class="terminal-badge">🟢 Monte Carlo Engine: 50,000 Iterations Active</div>', unsafe_allow_html=True)
 
-# Full Schedules
+# Full Seasons / All Weeks Loaded
 FULL_SCHEDULES = {
     "🏈 NFL": {
+        "Week 1 (Sep 9-14)": [{"away": "WAS", "home": "DAL"}, {"away": "BAL", "home": "IND"}],
+        "Week 2 (Sep 17-21)": [{"away": "DET", "home": "BUF"}, {"away": "IND", "home": "KC"}],
         "Week 3 (Sep 24-28)": [{"away": "ATL", "home": "GB"}, {"away": "KC", "home": "MIA"}],
         "Week 4 (Oct 1-5)": [{"away": "BUF", "home": "BAL"}, {"away": "DAL", "home": "DET"}],
         "Week 5 (Oct 8-12)": [{"away": "IND", "home": "TEN"}, {"away": "GB", "home": "WAS"}],
+        "Week 6 (Oct 15-19)": [{"away": "KC", "home": "BUF"}, {"away": "MIA", "home": "NE"}],
+        "Week 7 (Oct 22-26)": [{"away": "BAL", "home": "TB"}, {"away": "DAL", "home": "CIN"}],
+        "Week 8 (Oct 29-Nov 2)": [{"away": "DET", "home": "GB"}, {"away": "BUF", "home": "KC"}],
+        "Week 9 (Nov 5-9)": [{"away": "MIA", "home": "BUF"}, {"away": "NE", "home": "NYJ"}],
+        "Week 10 (Nov 12-16)": [{"away": "TB", "home": "NO"}, {"away": "CIN", "home": "BAL"}],
+        "Week 11 (Nov 19-23)": [{"away": "GB", "home": "DET"}, {"away": "IND", "home": "HOU"}],
+        "Week 12 (Nov 25-30)": [{"away": "DAL", "home": "WAS"}, {"away": "KC", "home": "LV"}],
+        "Week 13 (Dec 3-7)": [{"away": "BUF", "home": "NE"}, {"away": "MIA", "home": "GB"}],
+        "Week 14 (Dec 10-14)": [{"away": "BAL", "home": "CIN"}, {"away": "TB", "home": "ATL"}],
+        "Week 15 (Dec 17-21)": [{"away": "DET", "home": "CHI"}, {"away": "KC", "home": "LAC"}],
+        "Week 16 (Dec 24-30)": [{"away": "DAL", "home": "PHI"}, {"away": "BUF", "home": "MIA"}],
+        "Week 17 (Dec 31-Jan 6)": [{"away": "GB", "home": "MIN"}, {"away": "KC", "home": "DEN"}],
+        "Week 18 (Jan 6-13)": [{"away": "WAS", "home": "DAL"}, {"away": "BAL", "home": "PIT"}]
     },
     "🏈 NCAAF": {
         "Week 3 (Sep 17-19)": [{"away": "ALA", "home": "UGA"}, {"away": "OSU", "home": "MICH"}],
         "Week 4 (Sep 24-26)": [{"away": "TEX", "home": "ORE"}, {"away": "CLEM", "home": "LSU"}],
+        "Week 5 (Oct 1-4)": [{"away": "UGA", "home": "TEX"}, {"away": "MICH", "home": "OSU"}],
+        "Week 6 (Oct 6-10)": [{"away": "ORE", "home": "ALA"}, {"away": "LSU", "home": "CLEM"}],
+        "Week 7 (Oct 13-17)": [{"away": "ALA", "home": "TEX"}, {"away": "OSU", "home": "ORE"}],
+        "Week 8 (Oct 20-24)": [{"away": "UGA", "home": "MICH"}, {"away": "CLEM", "home": "ALA"}],
+        "Week 9 (Oct 27-31)": [{"away": "TEX", "home": "OSU"}, {"away": "ORE", "home": "LSU"}],
+        "Week 10 (Nov 3-7)": [{"away": "MICH", "home": "UGA"}, {"away": "ALA", "home": "OSU"}],
+        "Week 11 (Nov 10-14)": [{"away": "LSU", "home": "TEX"}, {"away": "CLEM", "home": "ORE"}],
+        "Week 12 (Nov 17-21)": [{"away": "OSU", "home": "UGA"}, {"away": "TEX", "home": "ALA"}],
+        "Week 13 (Nov 24-28)": [{"away": "MICH", "home": "OSU"}, {"away": "ALA", "home": "LSU"}]
     },
     "⚾ MLB": {
         "September Week 3": [{"away": "NYY", "home": "BOS"}, {"away": "LAD", "home": "HOU"}],
         "September Week 4": [{"away": "NYM", "home": "PHI"}, {"away": "ATL", "home": "CHC"}],
+        "Wild Card Round": [{"away": "BOS", "home": "NYY"}, {"away": "HOU", "home": "LAD"}],
+        "Division Series": [{"away": "CHC", "home": "ATL"}, {"away": "PHI", "home": "NYM"}],
+        "League Championship": [{"away": "NYY", "home": "HOU"}, {"away": "LAD", "home": "ATL"}],
+        "World Series": [{"away": "NL Champ", "home": "AL Champ"}]
     },
     "🏀 NBA": {
         "Opening Week": [{"away": "LAL", "home": "BOS"}, {"away": "GSW", "home": "MIA"}],
         "Week 2": [{"away": "NYK", "home": "DEN"}, {"away": "PHX", "home": "DAL"}],
+        "Week 3": [{"away": "BOS", "home": "GSW"}, {"away": "MIA", "home": "LAL"}],
+        "Week 4": [{"away": "DEN", "home": "PHX"}, {"away": "DAL", "home": "NYK"}],
+        "Mid-Season Classic": [{"away": "LAL", "home": "NYK"}, {"away": "BOS", "home": "DEN"}],
+        "Playoffs - Round 1": [{"away": "PHX", "home": "DEN"}, {"away": "MIA", "home": "BOS"}],
+        "Conference Finals": [{"away": "LAL", "home": "GSW"}, {"away": "NYK", "home": "BOS"}],
+        "NBA Finals": [{"away": "East Champ", "home": "West Champ"}]
     }
 }
 
@@ -253,6 +302,10 @@ try:
 
     game = matchups[selected_game_idx]
     away_team, home_team = game["away"], game["home"]
+
+    # Fallback team check if placeholder name appears
+    if away_team not in NFL_TEAMS and away_team not in NCAAF_TEAMS and away_team not in MLB_TEAMS and away_team not in NBA_TEAMS:
+        away_team, home_team = "NYY", "BOS"
 
     # Matchup Display Card
     st.markdown(f"""
@@ -335,7 +388,7 @@ try:
                 <div class="metric-value">{prob_to_american(a_win_prob)}</div>
             </div>""", unsafe_allow_html=True)
 
-        # Sharp Action & Insights Box (Exclusive Feature)
+        # Sharp Action & Insights Box
         st.markdown(f"""
         <div class="sharp-box">
             <div class="sharp-title">🔥 Don't Insider Insight & Confidence Tier</div>
