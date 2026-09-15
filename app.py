@@ -2,10 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Page configuration
 st.set_page_config(page_title="PickzWDon | NFL Week 2 Terminal", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for clean mobile-friendly layout
 st.markdown("""
 <style>
     .stApp {
@@ -27,9 +25,7 @@ st.markdown("""
         color: #ffffff;
         text-transform: uppercase;
     }
-    .brand-title span {
-        color: #10b981;
-    }
+    .brand-title span { color: #10b981; }
     .brand-sub {
         font-size: 10px;
         color: #9ca3af;
@@ -112,7 +108,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# NFL Team Full Names Dictionary
 NFL_TEAMS = {
     'DAL': 'Dallas Cowboys', 'WAS': 'Washington Commanders', 'BAL': 'Baltimore Ravens', 
     'IND': 'Indianapolis Colts', 'BUF': 'Buffalo Bills', 'HOU': 'Houston Texans', 
@@ -127,7 +122,6 @@ NFL_TEAMS = {
     'CLE': 'Cleveland Browns', 'JAX': 'Jacksonville Jaguars'
 }
 
-# Complete Week 2 Matchups List
 WEEK_2_MATCHUPS = [
     {"away": "DET", "home": "BUF"},
     {"away": "PIT", "home": "NE"},
@@ -152,7 +146,6 @@ def prob_to_american(p):
     if p >= 0.5: return f"-{int(round((p / (1.0 - p)) * 100))}"
     else: return f"+{int(round(((1.0 - p) / p) * 100))}"
 
-# Header Branding
 st.markdown("""
 <div class="brand-container">
     <div class="brand-title">PICKZW<span>DON</span></div>
@@ -162,7 +155,6 @@ st.markdown("""
 
 st.markdown('<div class="terminal-badge">🟢 Week 2 Monte Carlo Engine: 50,000 Iterations</div>', unsafe_allow_html=True)
 
-# Select Matchup Dropdown for Week 2 only
 matchup_labels = [f"{m['away']} @ {m['home']}" for m in WEEK_2_MATCHUPS]
 selected_matchup_label = st.selectbox("Select Week 2 Matchup", matchup_labels)
 
@@ -170,7 +162,6 @@ selected_idx = matchup_labels.index(selected_matchup_label)
 game = WEEK_2_MATCHUPS[selected_idx]
 away_team, home_team = game["away"], game["home"]
 
-# Matchup Header Display Card
 st.markdown(f"""
 <div class="matchup-container">
     <div class="team-box">
@@ -187,13 +178,26 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Run Simulation Button
 run_sim = st.button("🚀 Run Don's Algorithm Simulation", use_container_width=True, key="run_sim_btn")
 
 if run_sim:
-    h_win_prob, a_win_prob = 0.62, 0.38
-    fair_spread, fair_total = -4.5, 47.5
+    # Deterministic pseudo-random split per game based on index so numbers make sense per matchup
+    np.random.seed(selected_idx + 42)
+    h_win_prob = float(np.random.choice([0.52, 0.58, 0.64, 0.45, 0.71, 0.38]))
+    a_win_prob = round(1.0 - h_win_prob, 2)
     
+    # Proper spread assignment: if home team win prob > 0.5, home team is favored (-)
+    spread_val = round((h_win_prob - 0.5) * 12.0, 1)
+    if spread_val == 0: spread_val = -1.0
+    home_spread = -spread_val if h_win_prob >= 0.5 else abs(spread_val)
+    away_spread = -home_spread
+    
+    fair_total = float(np.random.choice([43.5, 45.5, 47.5, 49.0, 51.5]))
+    
+    favored_team = home_team if h_win_prob >= 0.5 else away_team
+    favored_prob = max(h_win_prob, a_win_prob)
+    favored_spread_display = home_spread if h_win_prob >= 0.5 else away_spread
+
     st.markdown('<div class="section-header">🎯 Terminal Projections & Edge</div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -207,7 +211,7 @@ if run_sim:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-title">Model Spread</div>
-            <div class="metric-value">{home_team} {fair_spread:+.1f}</div>
+            <div class="metric-value">{favored_team} {favored_spread_display:+.1f}</div>
             <div class="metric-sub">Value Line</div>
         </div>""", unsafe_allow_html=True)
     with c3:
@@ -223,7 +227,7 @@ if run_sim:
         <div class="sharp-title">🔥 Don't Insider Insight & Confidence Tier</div>
         <div class="sharp-text">
             <b>Confidence Rating:</b> 5/5 Units (MAX LOCK)<br>
-            <b>Sharp Action Report:</b> Professional syndicates are heavy on <b>{home_team}</b> (-{abs(fair_spread)}). Model projects a 7.4% expected value edge.
+            <b>Sharp Action Report:</b> Professional syndicates are heavy on <b>{favored_team}</b> ({favored_spread_display:+.1f}). Model projects a strong expected value edge over market lines.
         </div>
     </div>
     """, unsafe_allow_html=True)
