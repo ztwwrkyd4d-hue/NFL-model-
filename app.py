@@ -6,58 +6,87 @@ import numpy as np
 # Page configuration
 st.set_page_config(page_title="The Pick Don Clone", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS to replicate The Pick Don light-mode card theme
+# Custom CSS to force mobile-friendly flexbox layouts and custom card theme
 st.markdown("""
 <style>
-    /* Global background */
     .stApp {
         background-color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    /* Brand Header */
     .brand-header {
-        font-size: 32px;
+        font-size: 26px;
         font-weight: 900;
-        letter-spacing: -1px;
+        letter-spacing: -0.5px;
         color: #0f172a;
         text-transform: uppercase;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
-    /* White Card Container */
-    .pickdon-card {
-        background-color: #ffffff;
-        border-radius: 16px;
-        padding: 24px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-    /* Banner Card */
     .unlimited-banner {
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
         border: 1px solid #bbf7d0;
         border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 24px;
+        padding: 14px;
+        margin-bottom: 20px;
+        text-align: center;
     }
     .banner-title {
         font-weight: 800;
         color: #166534;
-        font-size: 16px;
+        font-size: 15px;
     }
     .banner-sub {
         color: #15803d;
-        font-size: 13px;
+        font-size: 12px;
     }
-    /* Stat Progress Label */
+    /* Mobile-safe side-by-side flexbox header */
+    .matchup-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: #ffffff;
+        padding: 16px 10px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+    .team-box {
+        text-align: center;
+        width: 40%;
+    }
+    .team-logo {
+        width: 65px;
+        height: 65px;
+        object-fit: contain;
+    }
+    .team-title {
+        font-weight: 800;
+        font-size: 13px;
+        color: #0f172a;
+        margin-top: 6px;
+        line-height: 1.2;
+    }
+    .team-abbr {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .vs-box {
+        text-align: center;
+        width: 20%;
+    }
+    .vs-text {
+        font-weight: 900;
+        font-size: 18px;
+        color: #94a3b8;
+    }
     .stat-label {
         font-weight: 700;
         color: #334155;
-        font-size: 14px;
+        font-size: 13px;
         margin-top: 10px;
     }
-    /* Hide Streamlit default chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -128,7 +157,7 @@ st.markdown('<div class="brand-header">⚡ THE PICK DON ENGINE</div>', unsafe_al
 st.markdown("""
 <div class="unlimited-banner">
     <div class="banner-title">🟢 UNLIMITED SIMULATIONS ACTIVE</div>
-    <div class="banner-sub">Premium Tier Unlocked • Powered by Monte Carlo 50k Drive Simulation</div>
+    <div class="banner-sub">Monte Carlo 50,000 Iteration Engine</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -136,33 +165,30 @@ try:
     epa_df = load_data()
     teams = sorted(list(epa_df.index))
 
-    # Matchup Selection Card
-    st.markdown('<div class="pickdon-card">', unsafe_allow_html=True)
-    st.subheader("🏈 Select Matchup")
-    
     col1, col2 = st.columns(2)
     with col1:
         away_team = st.selectbox("Away Team", teams, index=teams.index("WAS") if "WAS" in teams else 0)
     with col2:
         home_team = st.selectbox("Home Team", teams, index=teams.index("PHI") if "PHI" in teams else 1)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Visual Matchup Header (Exact Pick Don Look)
-    m_col1, m_col2, m_col3 = st.columns([2, 1, 2])
-    with m_col1:
-        st.image(get_logo(away_team), width=90)
-        st.markdown(f"### **{get_full_name(away_team)}**")
-        st.caption(away_team)
-    with m_col2:
-        st.markdown("<h2 style='text-align: center; color: #94a3b8; margin-top: 30px;'>VS</h2>", unsafe_allow_html=True)
-        st.caption("NFL REGULAR SEASON")
-    with m_col3:
-        st.image(get_logo(home_team), width=90)
-        st.markdown(f"### **{get_full_name(home_team)}**")
-        st.caption(home_team)
-
-    st.markdown("---")
+    # Pure HTML Flexbox header guarantees horizontal layout on mobile
+    st.markdown(f"""
+    <div class="matchup-container">
+        <div class="team-box">
+            <img src="{get_logo(away_team)}" class="team-logo"/>
+            <div class="team-title">{get_full_name(away_team)}</div>
+            <div class="team-abbr">{away_team}</div>
+        </div>
+        <div class="vs-box">
+            <div class="vs-text">VS</div>
+        </div>
+        <div class="team-box">
+            <img src="{get_logo(home_team)}" class="team-logo"/>
+            <div class="team-title">{get_full_name(home_team)}</div>
+            <div class="team-abbr">{home_team}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if st.button("🚀 Run Algorithm Simulation", use_container_width=True):
         num_sims = 50000
@@ -202,7 +228,6 @@ try:
         spread_ci = (np.percentile(-margins, 2.5), np.percentile(-margins, 97.5))
         total_ci = (np.percentile(totals, 2.5), np.percentile(totals, 97.5))
         
-        # Fair Odds & Lines Cards
         st.markdown("### 🎯 SIMULATION PROJECTIONS")
         
         b1, b2, b3 = st.columns(3)
@@ -220,7 +245,6 @@ try:
         with m2:
             st.metric(f"{home_team} Fair ML", prob_to_american(h_win_prob))
 
-        # Simulated Matchup Stats
         st.markdown("### 📊 SIMULATED GAME METRICS")
         
         h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12))
