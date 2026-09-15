@@ -6,7 +6,7 @@ import numpy as np
 # Page setup
 st.set_page_config(page_title="APEX SPORTS HUB", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for crisp light-mode visibility
+# Custom CSS for compact professional layout
 st.markdown("""
 <style>
     .stApp {
@@ -14,7 +14,7 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .brand-title {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 900;
         letter-spacing: -1px;
         color: #0f172a;
@@ -23,91 +23,54 @@ st.markdown("""
         margin-bottom: 2px;
     }
     .brand-sub {
-        font-size: 11px;
+        font-size: 10px;
         text-align: center;
         color: #64748b;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         font-weight: 600;
     }
     .unlimited-banner {
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
         border: 1px solid #bbf7d0;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 16px;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 12px;
         text-align: center;
     }
-    .banner-title {
-        font-weight: 800;
-        color: #166534;
-        font-size: 14px;
-    }
-    .banner-sub-text {
-        color: #15803d;
-        font-size: 11px;
-    }
-    .game-card {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-    }
-    .game-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .game-team {
-        font-weight: 700;
-        font-size: 13px;
-        color: #0f172a;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .game-logo {
-        width: 26px;
-        height: 26px;
-        object-fit: contain;
-    }
-    .game-meta {
-        font-size: 11px;
-        color: #64748b;
-        margin-top: 6px;
-    }
+    .banner-title { font-weight: 800; color: #166534; font-size: 13px; }
+    .banner-sub-text { color: #15803d; font-size: 10px; }
+    
     .matchup-container {
         display: flex;
         justify-content: space-around;
         align-items: center;
         background-color: #ffffff;
-        padding: 14px 10px;
-        border-radius: 16px;
+        padding: 12px 10px;
+        border-radius: 14px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 16px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        margin-bottom: 12px;
     }
     .team-box { text-align: center; width: 40%; }
-    .team-logo-lg { width: 60px; height: 60px; object-fit: contain; }
-    .team-title { font-weight: 800; font-size: 12px; color: #0f172a; margin-top: 4px; }
-    .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 16px; color: #94a3b8; }
+    .team-logo-lg { width: 50px; height: 50px; object-fit: contain; }
+    .team-title { font-weight: 800; font-size: 11px; color: #0f172a; margin-top: 4px; }
+    .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 14px; color: #94a3b8; }
     
-    /* Custom light-mode safe data boxes to prevent invisible text */
     .metric-card {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 10px;
-        padding: 12px;
+        padding: 10px;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
-    .metric-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .metric-value { font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 4px; }
-    .metric-sub { font-size: 11px; color: #059669; font-weight: 600; margin-top: 2px; }
+    .metric-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .metric-value { font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 2px; }
+    .metric-sub { font-size: 10px; color: #059669; font-weight: 600; }
 
-    .stat-label { font-weight: 700; color: #334155; font-size: 12px; margin-top: 10px; }
-    .footer-text { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 30px; }
+    .section-header { font-size: 13px; font-weight: 800; color: #1e293b; margin-top: 14px; margin-bottom: 6px; text-transform: uppercase; }
+    .stat-label { font-weight: 700; color: #334155; font-size: 11px; margin-top: 8px; }
+    .footer-text { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 20px; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -197,10 +160,8 @@ UPCOMING_GAMES = [
 try:
     epa_df = load_data()
 
-    st.markdown("### 🏈 NFL Upcoming Games")
-    
     selected_game_idx = st.selectbox(
-        "Choose a matchup:",
+        "Choose Matchup:",
         range(len(UPCOMING_GAMES)),
         format_func=lambda i: f"{UPCOMING_GAMES[i]['away']} @ {UPCOMING_GAMES[i]['home']} — {UPCOMING_GAMES[i]['date']}"
     )
@@ -260,33 +221,32 @@ try:
         fair_spread = -np.mean(margins)
         fair_total = np.mean(totals)
         
-        st.markdown("### 🎯 SIMULATION PROJECTIONS")
+        st.markdown('<div class="section-header">🎯 Simulation Projections</div>', unsafe_allow_html=True)
         
-        # Custom mobile-safe HTML cards for projections
-        col1, col2, col3 = st.columns(3)
-        with col1:
+        c1, c2, c3 = st.columns(3)
+        with c1:
             st.markdown(f"""
             <div class="metric-card">
-                <div class="metric-title">Win Probability</div>
-                <div class="metric-value">{home_team} {h_win_prob*100:.1f}%</div>
-                <div class="metric-sub">{away_team} {a_win_prob*100:.1f}%</div>
+                <div class="metric-title">Win Prob</div>
+                <div class="metric-value">{home_team} {h_win_prob*100:.0f}%</div>
+                <div class="metric-sub">{away_team} {a_win_prob*100:.0f}%</div>
             </div>""", unsafe_allow_html=True)
-        with col2:
+        with c2:
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Fair Spread</div>
                 <div class="metric-value">{home_team} {fair_spread:+.1f}</div>
                 <div class="metric-sub">Model Line</div>
             </div>""", unsafe_allow_html=True)
-        with col3:
+        with c3:
             st.markdown(f"""
             <div class="metric-card">
                 <div class="metric-title">Fair Total</div>
-                <div class="metric-value">{fair_total:.1f} pts</div>
-                <div class="metric-sub">O/U Line</div>
+                <div class="metric-value">{fair_total:.1f}</div>
+                <div class="metric-sub">O/U Points</div>
             </div>""", unsafe_allow_html=True)
 
-        st.markdown("### 💰 FAIR MONEYLINE ODDS")
+        st.markdown('<div class="section-header">💰 Fair Moneyline Odds</div>', unsafe_allow_html=True)
         m1, m2 = st.columns(2)
         with m1:
             st.markdown(f"""
@@ -301,14 +261,14 @@ try:
                 <div class="metric-value">{prob_to_american(h_win_prob)}</div>
             </div>""", unsafe_allow_html=True)
 
-        st.markdown("### 📊 SIMULATED GAME METRICS")
+        st.markdown('<div class="section-header">📊 Simulated Game Metrics</div>', unsafe_allow_html=True)
         h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12)) if home_team in epa_df.index else 220
         a_pass = max(120.0, epa_df.loc[away_team, 'pass_yds'] + np.random.normal(0, 12)) if away_team in epa_df.index else 220
         
         st.markdown(f'<div class="stat-label">Passing Yards: {away_team} ({a_pass:.0f} yds) vs {home_team} ({h_pass:.0f} yds)</div>', unsafe_allow_html=True)
         st.progress(float(h_pass / (h_pass + a_pass)))
 
-    st.markdown('<div class="footer-text">© 2026 APEX ANALYTICS. ALL RIGHTS RESERVED.<br>Powered by Apex Simulation Engine</div>', unsafe_allow_html=True)
+    st.markdown('<div class="footer-text">© 2026 APEX ANALYTICS. ALL RIGHTS RESERVED.</div>', unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Engine loading... ({e})")
