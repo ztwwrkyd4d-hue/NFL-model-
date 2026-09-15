@@ -3,8 +3,92 @@ import nflreadpy as nfl
 import pandas as pd
 import numpy as np
 
-st.set_page_config(page_title="The Pick Don Clone", layout="wide")
-st.title("🎯 Betting Analysis Engine")
+# Page configuration
+st.set_page_config(page_title="The Pick Don Clone", layout="wide", initial_sidebar_state="collapsed")
+
+# Custom CSS to replicate The Pick Don light-mode card theme
+st.markdown("""
+<style>
+    /* Global background */
+    .stApp {
+        background-color: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    /* Brand Header */
+    .brand-header {
+        font-size: 32px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        color: #0f172a;
+        text-transform: uppercase;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    /* White Card Container */
+    .pickdon-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+    /* Banner Card */
+    .unlimited-banner {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    .banner-title {
+        font-weight: 800;
+        color: #166534;
+        font-size: 16px;
+    }
+    .banner-sub {
+        color: #15803d;
+        font-size: 13px;
+    }
+    /* Stat Progress Label */
+    .stat-label {
+        font-weight: 700;
+        color: #334155;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    /* Hide Streamlit default chrome */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+# Team Name & ESPN Logo Mapping
+TEAM_MAP = {
+    'ARI': ('Arizona Cardinals', 'ari'), 'ATL': ('Atlanta Falcons', 'atl'),
+    'BAL': ('Baltimore Ravens', 'bal'), 'BUF': ('Buffalo Bills', 'buf'),
+    'CAR': ('Carolina Panthers', 'car'), 'CHI': ('Chicago Bears', 'chi'),
+    'CIN': ('Cincinnati Bengals', 'cin'), 'CLE': ('Cleveland Browns', 'cle'),
+    'DAL': ('Dallas Cowboys', 'dal'), 'DEN': ('Denver Broncos', 'den'),
+    'DET': ('Detroit Lions', 'det'), 'GB': ('Green Bay Packers', 'gb'),
+    'HOU': ('Houston Texans', 'hou'), 'IND': ('Indianapolis Colts', 'ind'),
+    'JAX': ('Jacksonville Jaguars', 'jax'), 'KC': ('Kansas City Chiefs', 'kc'),
+    'LV': ('Las Vegas Raiders', 'lv'), 'LAC': ('Los Angeles Chargers', 'lac'),
+    'LAR': ('Los Angeles Rams', 'lar'), 'MIA': ('Miami Dolphins', 'mia'),
+    'MIN': ('Minnesota Vikings', 'min'), 'NE': ('New England Patriots', 'ne'),
+    'NO': ('New Orleans Saints', 'no'), 'NYG': ('New York Giants', 'nyg'),
+    'NYJ': ('New York Jets', 'nyj'), 'PHI': ('Philadelphia Eagles', 'phi'),
+    'PIT': ('Pittsburgh Steelers', 'pit'), 'SF': ('San Francisco 49ers', 'sf'),
+    'SEA': ('Seattle Seahawks', 'sea'), 'TB': ('Tampa Bay Buccaneers', 'tb'),
+    'TEN': ('Tennessee Titans', 'ten'), 'WAS': ('Washington Commanders', 'was')
+}
+
+def get_logo(abbr):
+    espn_code = TEAM_MAP.get(abbr, (abbr, abbr.lower()))[1]
+    return f"https://a.espncdn.com/i/teamlogos/nfl/500/{espn_code}.png"
+
+def get_full_name(abbr):
+    return TEAM_MAP.get(abbr, (abbr, abbr))[0]
 
 @st.cache_data(ttl=86400)
 def load_data():
@@ -17,7 +101,6 @@ def load_data():
     off_epa = scrimmage.groupby('posteam')['epa'].mean()
     def_epa = scrimmage.groupby('defteam')['epa'].mean()
     
-    # Estimate yards per play metrics
     pass_plays = scrimmage[scrimmage['play_type'] == 'pass']
     run_plays = scrimmage[scrimmage['play_type'] == 'run']
     
@@ -38,17 +121,50 @@ def prob_to_american(p):
     else:
         return f"+{int(round(((1.0 - p) / p) * 100))}"
 
+# App Header
+st.markdown('<div class="brand-header">⚡ THE PICK DON ENGINE</div>', unsafe_allow_html=True)
+
+# Unlimited Banner Card
+st.markdown("""
+<div class="unlimited-banner">
+    <div class="banner-title">🟢 UNLIMITED SIMULATIONS ACTIVE</div>
+    <div class="banner-sub">Premium Tier Unlocked • Powered by Monte Carlo 50k Drive Simulation</div>
+</div>
+""", unsafe_allow_html=True)
+
 try:
     epa_df = load_data()
     teams = sorted(list(epa_df.index))
 
+    # Matchup Selection Card
+    st.markdown('<div class="pickdon-card">', unsafe_allow_html=True)
+    st.subheader("🏈 Select Matchup")
+    
     col1, col2 = st.columns(2)
     with col1:
         away_team = st.selectbox("Away Team", teams, index=teams.index("WAS") if "WAS" in teams else 0)
     with col2:
-        home_team = st.selectbox("Home Team", teams, index=teams.index("DAL") if "DAL" in teams else 1)
+        home_team = st.selectbox("Home Team", teams, index=teams.index("PHI") if "PHI" in teams else 1)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.button("Run Betting & Stat Analysis"):
+    # Visual Matchup Header (Exact Pick Don Look)
+    m_col1, m_col2, m_col3 = st.columns([2, 1, 2])
+    with m_col1:
+        st.image(get_logo(away_team), width=90)
+        st.markdown(f"### **{get_full_name(away_team)}**")
+        st.caption(away_team)
+    with m_col2:
+        st.markdown("<h2 style='text-align: center; color: #94a3b8; margin-top: 30px;'>VS</h2>", unsafe_allow_html=True)
+        st.caption("NFL REGULAR SEASON")
+    with m_col3:
+        st.image(get_logo(home_team), width=90)
+        st.markdown(f"### **{get_full_name(home_team)}**")
+        st.caption(home_team)
+
+    st.markdown("---")
+
+    if st.button("🚀 Run Algorithm Simulation", use_container_width=True):
         num_sims = 50000
         num_drives = 11
         
@@ -80,43 +196,45 @@ try:
         h_win_prob = np.mean(margins > 0)
         a_win_prob = 1.0 - h_win_prob
         
-        # Fair Lines Calculations
         fair_spread = -np.mean(margins)
         fair_total = np.mean(totals)
         
         spread_ci = (np.percentile(-margins, 2.5), np.percentile(-margins, 97.5))
         total_ci = (np.percentile(totals, 2.5), np.percentile(totals, 97.5))
         
-        st.markdown("---")
-        st.header("🎯 BETTING ANALYSIS")
+        # Fair Odds & Lines Cards
+        st.markdown("### 🎯 SIMULATION PROJECTIONS")
         
-        c1, c2 = st.columns(2)
-        with c1:
-            st.subheader("Win Probability")
-            st.write(f"**{home_team}:** {h_win_prob*100:.1f}% | **{away_team}:** {a_win_prob*100:.1f}%")
-            
-            st.subheader("Fair Moneyline Odds")
-            st.write(f"**{home_team}:** {prob_to_american(h_win_prob)} | **{away_team}:** {prob_to_american(a_win_prob)}")
-            
-        with c2:
-            st.metric("Fair Total (Over/Under)", f"{fair_total:.1f}", f"CI: {total_ci[0]:.1f} to {total_ci[1]:.1f}")
-            st.metric("Fair Spread", f"{home_team} {fair_spread:+.2f}", f"CI: {spread_ci[0]:.1f} to {spread_ci[1]:.1f}")
+        b1, b2, b3 = st.columns(3)
+        with b1:
+            st.metric("Win Probability", f"{home_team} {h_win_prob*100:.1f}%", f"{away_team} {a_win_prob*100:.1f}%")
+        with b2:
+            st.metric("Fair Spread", f"{home_team} {fair_spread:+.1f}", f"95% CI: [{spread_ci[0]:.1f}, {spread_ci[1]:.1f}]")
+        with b3:
+            st.metric("Fair Total (O/U)", f"{fair_total:.1f} pts", f"95% CI: [{total_ci[0]:.1f}, {total_ci[1]:.1f}]")
 
-        st.markdown("---")
-        st.header("📊 SIMULATED TEAM STATS")
+        st.markdown("### 💰 FAIR MONEYLINE ODDS")
+        m1, m2 = st.columns(2)
+        with m1:
+            st.metric(f"{away_team} Fair ML", prob_to_american(a_win_prob))
+        with m2:
+            st.metric(f"{home_team} Fair ML", prob_to_american(h_win_prob))
+
+        # Simulated Matchup Stats
+        st.markdown("### 📊 SIMULATED GAME METRICS")
         
-        h_pass = max(100.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 10))
-        a_pass = max(100.0, epa_df.loc[away_team, 'pass_yds'] + np.random.normal(0, 10))
-        h_rush = max(50.0, epa_df.loc[home_team, 'rush_yds'] + np.random.normal(0, 8))
-        a_rush = max(50.0, epa_df.loc[away_team, 'rush_yds'] + np.random.normal(0, 8))
+        h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12))
+        a_pass = max(120.0, epa_df.loc[away_team, 'pass_yds'] + np.random.normal(0, 12))
+        h_rush = max(60.0, epa_df.loc[home_team, 'rush_yds'] + np.random.normal(0, 8))
+        a_rush = max(60.0, epa_df.loc[away_team, 'rush_yds'] + np.random.normal(0, 8))
         
-        st.write(f"**Passing Yards:** {home_team} `{h_pass:.1f} yds` vs {away_team} `{a_pass:.1f} yds`")
+        st.markdown(f'<div class="stat-label">Passing Yards: {away_team} ({a_pass:.0f} yds) vs {home_team} ({h_pass:.0f} yds)</div>', unsafe_allow_html=True)
         st.progress(float(h_pass / (h_pass + a_pass)))
         
-        st.write(f"**Rushing Yards:** {home_team} `{h_rush:.1f} yds` vs {away_team} `{a_rush:.1f} yds`")
+        st.markdown(f'<div class="stat-label">Rushing Yards: {away_team} ({a_rush:.0f} yds) vs {home_team} ({h_rush:.0f} yds)</div>', unsafe_allow_html=True)
         st.progress(float(h_rush / (h_rush + a_rush)))
         
-        st.write(f"**EPA/Play:** {home_team} `{epa_df.loc[home_team, 'off_epa_play']:.3f}` vs {away_team} `{epa_df.loc[away_team, 'off_epa_play']:.3f}`")
+        st.markdown(f'<div class="stat-label">Offensive EPA/Play: {away_team} ({epa_df.loc[away_team, "off_epa_play"]:.3f}) vs {home_team} ({epa_df.loc[home_team, "off_epa_play"]:.3f})</div>', unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Loading engine data... ({e})")
