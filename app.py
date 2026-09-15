@@ -6,7 +6,7 @@ import numpy as np
 # Page setup
 st.set_page_config(page_title="APEX SPORTS HUB", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for Light Modern "Pick Don" UI
+# Custom CSS for crisp light-mode visibility
 st.markdown("""
 <style>
     .stApp {
@@ -14,43 +14,43 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     .brand-title {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 900;
         letter-spacing: -1px;
         color: #0f172a;
         text-transform: uppercase;
         text-align: center;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
     }
     .brand-sub {
-        font-size: 12px;
+        font-size: 11px;
         text-align: center;
         color: #64748b;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         font-weight: 600;
     }
     .unlimited-banner {
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
         border: 1px solid #bbf7d0;
         border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 20px;
+        padding: 12px;
+        margin-bottom: 16px;
         text-align: center;
     }
     .banner-title {
         font-weight: 800;
         color: #166534;
-        font-size: 15px;
+        font-size: 14px;
     }
     .banner-sub-text {
         color: #15803d;
-        font-size: 12px;
+        font-size: 11px;
     }
     .game-card {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 14px;
+        padding: 12px;
         margin-bottom: 12px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
@@ -61,39 +61,53 @@ st.markdown("""
     }
     .game-team {
         font-weight: 700;
-        font-size: 14px;
+        font-size: 13px;
         color: #0f172a;
         display: flex;
         align-items: center;
         gap: 6px;
     }
     .game-logo {
-        width: 28px;
-        height: 28px;
+        width: 26px;
+        height: 26px;
         object-fit: contain;
     }
     .game-meta {
         font-size: 11px;
         color: #64748b;
-        margin-top: 8px;
+        margin-top: 6px;
     }
     .matchup-container {
         display: flex;
         justify-content: space-around;
         align-items: center;
         background-color: #ffffff;
-        padding: 16px 10px;
+        padding: 14px 10px;
         border-radius: 16px;
         border: 1px solid #e2e8f0;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     .team-box { text-align: center; width: 40%; }
-    .team-logo-lg { width: 65px; height: 65px; object-fit: contain; }
-    .team-title { font-weight: 800; font-size: 13px; color: #0f172a; margin-top: 6px; }
-    .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 18px; color: #94a3b8; }
-    .stat-label { font-weight: 700; color: #334155; font-size: 13px; margin-top: 10px; }
-    .footer-text { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; }
+    .team-logo-lg { width: 60px; height: 60px; object-fit: contain; }
+    .team-title { font-weight: 800; font-size: 12px; color: #0f172a; margin-top: 4px; }
+    .vs-box { text-align: center; width: 20%; font-weight: 900; font-size: 16px; color: #94a3b8; }
+    
+    /* Custom light-mode safe data boxes to prevent invisible text */
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .metric-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .metric-value { font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 4px; }
+    .metric-sub { font-size: 11px; color: #059669; font-weight: 600; margin-top: 2px; }
+
+    .stat-label { font-weight: 700; color: #334155; font-size: 12px; margin-top: 10px; }
+    .footer-text { text-align: center; font-size: 10px; color: #94a3b8; margin-top: 30px; }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -161,8 +175,8 @@ def load_data():
 st.markdown('<div class="brand-title">⚡ APEX ALGO HUB</div>', unsafe_allow_html=True)
 st.markdown('<div class="brand-sub">POWERED BY APEX ANALYTICS ENGINE</div>', unsafe_allow_html=True)
 
-# Sport Category Selector
-sport = st.selectbox("Select League", ["🏈 NFL", "🏈 NCAAF (Coming Soon)", "⚾ MLB (Coming Soon)", "🏀 NBA (Coming Soon)"], index=0)
+# League Selector
+sport = st.selectbox("Select League", ["🏈 NFL", "🏈 NCAAF", "⚾ MLB", "🏀 NBA"], index=0)
 
 # Banner
 st.markdown("""
@@ -172,7 +186,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sample Schedule Games
 UPCOMING_GAMES = [
     {"away": "WAS", "home": "PHI", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "Lincoln Financial Field"},
     {"away": "BAL", "home": "IND", "date": "Sep 13th", "time": "1:00 PM EST", "venue": "Lucas Oil Stadium"},
@@ -183,31 +196,17 @@ UPCOMING_GAMES = [
 
 try:
     epa_df = load_data()
-    teams = sorted(list(epa_df.index))
 
     st.markdown("### 🏈 NFL Upcoming Games")
     
-    # Custom game selection card list
     selected_game_idx = st.selectbox(
-        "Choose a matchup to analyze:",
+        "Choose a matchup:",
         range(len(UPCOMING_GAMES)),
-        format_func=lambda i: f"{UPCOMING_GAMES[i]['away']} @ {UPCOMING_GAMES[i]['home']} — {UPCOMING_GAMES[i]['date']} ({UPCOMING_GAMES[i]['time']})"
+        format_func=lambda i: f"{UPCOMING_GAMES[i]['away']} @ {UPCOMING_GAMES[i]['home']} — {UPCOMING_GAMES[i]['date']}"
     )
 
     game = UPCOMING_GAMES[selected_game_idx]
     away_team, home_team = game["away"], game["home"]
-
-    # Visual Cards Display
-    st.markdown(f"""
-    <div class="game-card">
-        <div class="game-header">
-            <div class="game-team"><img src="{get_logo(away_team)}" class="game-logo"/> {get_full_name(away_team)}</div>
-            <div style="font-weight: 800; color: #94a3b8;">@</div>
-            <div class="game-team"><img src="{get_logo(home_team)}" class="game-logo"/> {get_full_name(home_team)}</div>
-        </div>
-        <div class="game-meta">📅 {game['date']} • 🕒 {game['time']} • 📍 {game['venue']}</div>
-    </div>
-    """, unsafe_allow_html=True)
 
     # Matchup Display Header
     st.markdown(f"""
@@ -215,13 +214,13 @@ try:
         <div class="team-box">
             <img src="{get_logo(away_team)}" class="team-logo-lg"/>
             <div class="team-title">{get_full_name(away_team)}</div>
-            <div style="font-size:11px; color:#64748b;">{away_team}</div>
+            <div style="font-size:10px; color:#64748b;">{away_team}</div>
         </div>
         <div class="vs-box">VS</div>
         <div class="team-box">
             <img src="{get_logo(home_team)}" class="team-logo-lg"/>
             <div class="team-title">{get_full_name(home_team)}</div>
-            <div style="font-size:11px; color:#64748b;">{home_team}</div>
+            <div style="font-size:10px; color:#64748b;">{home_team}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -262,15 +261,45 @@ try:
         fair_total = np.mean(totals)
         
         st.markdown("### 🎯 SIMULATION PROJECTIONS")
-        b1, b2, b3 = st.columns(3)
-        with b1: st.metric("Win Probability", f"{home_team} {h_win_prob*100:.1f}%", f"{away_team} {a_win_prob*100:.1f}%")
-        with b2: st.metric("Fair Spread", f"{home_team} {fair_spread:+.1f}")
-        with b3: st.metric("Fair Total (O/U)", f"{fair_total:.1f} pts")
+        
+        # Custom mobile-safe HTML cards for projections
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-title">Win Probability</div>
+                <div class="metric-value">{home_team} {h_win_prob*100:.1f}%</div>
+                <div class="metric-sub">{away_team} {a_win_prob*100:.1f}%</div>
+            </div>""", unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-title">Fair Spread</div>
+                <div class="metric-value">{home_team} {fair_spread:+.1f}</div>
+                <div class="metric-sub">Model Line</div>
+            </div>""", unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-title">Fair Total</div>
+                <div class="metric-value">{fair_total:.1f} pts</div>
+                <div class="metric-sub">O/U Line</div>
+            </div>""", unsafe_allow_html=True)
 
         st.markdown("### 💰 FAIR MONEYLINE ODDS")
         m1, m2 = st.columns(2)
-        with m1: st.metric(f"{away_team} Fair ML", prob_to_american(a_win_prob))
-        with m2: st.metric(f"{home_team} Fair ML", prob_to_american(h_win_prob))
+        with m1:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-title">{away_team} Fair ML</div>
+                <div class="metric-value">{prob_to_american(a_win_prob)}</div>
+            </div>""", unsafe_allow_html=True)
+        with m2:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-title">{home_team} Fair ML</div>
+                <div class="metric-value">{prob_to_american(h_win_prob)}</div>
+            </div>""", unsafe_allow_html=True)
 
         st.markdown("### 📊 SIMULATED GAME METRICS")
         h_pass = max(120.0, epa_df.loc[home_team, 'pass_yds'] + np.random.normal(0, 12)) if home_team in epa_df.index else 220
